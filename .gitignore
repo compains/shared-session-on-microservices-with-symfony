@@ -1,1 +1,3 @@
 .idea
+docker/redis_data
+docker/mysql_data
