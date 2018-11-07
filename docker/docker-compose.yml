@@ -1,0 +1,54 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 33306:3306
+    command: --sql_mode=""
+    expose:
+      - 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    restart: always
+  redis:
+    image: redis
+    ports:
+      - 36379:6379
+    expose:
+      - 6379
+    volumes:
+      - ./redis_data:/data
+    restart: always
+  varnish:
+    image: million12/varnish
+    ports:
+      - 90:80
+    volumes:
+      - ../varnish:/etc/varnish
+    environment:
+      VCL_CONFIG: /etc/varnish/site.vcl
+      VARNISHD_PARAMS: -p default_ttl=3600 -p default_grace=3600 -p feature=+esi_ignore_https
+    command: /start.sh
+    restart: always
+  app1:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    expose:
+      - 80
+    ports:
+      - 8081:80
+    volumes:
+      - ../app1:/var/www
+      - ../apache:/etc/apache2/sites-available
+  app2:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    expose:
+      - 80
+    volumes:
+      - ../app2:/var/www
+      - ../apache:/etc/apache2/sites-available
